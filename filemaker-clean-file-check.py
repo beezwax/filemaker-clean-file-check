@@ -57,16 +57,19 @@ if __name__ == '__main__':
 	
 	try:
 		result = check_byte_0x800(file_path)
+		print ()
 		if result:
 			print(f"✓ Byte at 0x800 is 0xAC")
 			print ("This file was closed normally.")
+			print ()
 		else:
 			with open(file_path, 'rb') as f:
 				f.seek(0x800)
 				actual_byte = f.read(1)[0]
 			print(f"✗ Byte at 0x800 is 0x{actual_byte:02X} (expected 0xAC)")
 			print_error ("FILE NOT CLOSED CLEANLY")
-      print ("This file should be checked more closely for problems, or a backup used instead.")
+			print ("This file should be checked more closely for problems, or a backup used instead.")
+			print ()
 		sys.exit(0 if result else 1)
 	except Exception as e:
 		print(f"Error: {e}")
