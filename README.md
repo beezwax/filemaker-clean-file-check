@@ -13,33 +13,51 @@ Check if a FileMaker .fmp12 file was closed cleanly by the server or client
 
 This tool checks for a byte flag found in .fmp12 files that indicates whether the FileMaker file at the given path was cleanly closed.
 
-It does not in any way alter the data on the file, although some meta (that is not in the file) about when the file was last accessed may be changed as a result.
+It does not in any way alter the data on the file, although meta data (that is not part of the file's data) about when the file was last accessed will be changed as a result.
 
 ### When To Use It?
 
-If working with larger files, restoring from backups (especially if they are remote, tape based, etc.) may require a fair amount of time. Or, due to unusual circumnstances, there may uncertainty about the current state of the files, but you don't want to possibly tie up the file with a lengthy consistency or recovery check. This tool can help you determine if the local files were safely & correctly closed.
+If one or more of the considerations below is true then this tool may be helpful:
+
+* working with very large files
+* restoring from backups (especially if they are remote, tape based, etc.) that may require a lengthy delay to restore from
+* in unusual circumnstances were you may be uncertainty about the current state of the files
+* you don't want to possibly tie up the file with a lengthy consistency or recovery check
+* FMS is hung, and you'd like to know if the database file was closed*
+
+*On FileMaker Server, it is possible for a hosted file to of effectively been closed. For instance, if the database file was Paused in the admin console before the issue occured.
 
 ### What does it mean if it was cleanly closed?
 
-This means the file should be a complete and fully intact copy of the database file at the time it was last written to. This of course assumes there weren't any prior problems with the file.
+* the file should be a complete and fully intact copy of the database file*
+* the data in file includes all data changes up to the time the file was last closed
+
+*This assumes there weren't any prior problems with the file.
 
 ### What if it wasn't cleanly closed?
 
-This does not necessarily mean the previously hosted/open file is bad. But, at the very least, some data may of been added, updated, or deleted, that is not part of the file. FileMaker Server's Persistent Cache settings can greatly reduce the likelyhood of this problem, and can restore the file to its at, or very close to, the time of the incident. It can do this by utilizing data that was written out to cache files, similar to a transaction log, to restore any recent changes.
+For smaller files, and assuming recent backups of the needed vintage are available, the easiest, quickest, and safest path is to restore from the last good backup.
 
-On FileMaker Server, this will mean that FMS will perform always perform a consistency check before opening the file.
+But to drill down on this, here are the possible scenarios:
 
-If not using FMS, or FMS is not using Persistent Cache, or the cache is not usable for some reason, there is a significant chance of at least minor damage. 
+* the file _may_ still be OK
+* a fair chance of minor damage, which FMS or FMP can repair easily
+* a significant chance some data or schema changes (using "schema" in broad sense) were lost
+* a somewhat unlikely chance that the file is badly damaged
+
+In this case there is nothing close to certainty about the state of the file. At the least, some data may of been added, updated, or deleted that is not part of the file you are evaluating.
+
+FileMaker Server's Persistent Cache settings can greatly reduce the likelyhood of losing any data, and can restore the file's data to something either at, or very close to, the time of the incident. It does this by utilizing data that was written out to cache files, similar to a transaction log, to restore any recent changes. The main catch, at least for very large files: the only way to utilize this is to allow FMS to re-open the file, perform a lengthy consistency check, and then attempt to re-consolidate the files.
+
+If using FMP, or FMS is not using Persistent Cache, or the cache is unusable for some reason, you probably have an increased likelyhood of a more seriously damaged file. In regards to lost data however there is one thing to check for in the Event.log. If you see a message like the one below the Persistent Cache could be missing a significant number of changes:
+
+`The transaction originating from user[user-name-here] session[session-name] machine[your.host.name] to file[your-filename.fmp12] was not committed before the server terminated abnormally.`
 
 ### More Background
 
-Typically you'd be interested in this if your server or client had became unstable, had a power outage, disk became too full, etc.
+Typically you'd be interested in this tool if your server or client had became unstable, had a power outage, disk became too full, etc.
 In these cases there may be uncertainty as to whether the previously files were open (hosted) at the time of the incident, and whether they are safe to use.
-
-For smaller files, and assuming recent backups of the needed vintage are available, the easiest, quickest, and safest path is to restore from the last good backup.
 
 But other less common situations may occur where there is reason to think the current files were not damaged by the event, or extra measures are needed. In these cases, it may be safe to
 proceed with the previously opened/hosted files.
 Generally, if a file is open and in use, there will be unsaved data (record commits, etc.) that is still in memory or has not been written out to the .fmp12 file yet.
-
-Other actions, such as pausing the database file, or a scheduled backup having recently completed, may force any unsaved data to be consolidated into the main file.
