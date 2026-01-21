@@ -21,9 +21,9 @@ If working with larger files, restoring from backups (especially if they are rem
 
 ### What does it mean if it was cleanly closed?
 
-This means the file should be a complete and fully intact copy of the database file at the time it was created. This of course assumes there weren't any prior problems with the file.
+This means the file should be a complete and fully intact copy of the database file at the time it was last written to. This of course assumes there weren't any prior problems with the file.
 
-### What it wasn't cleanly closed?
+### What if it wasn't cleanly closed?
 
 This does not necessarily mean the previously hosted/open file is bad. But, at the very least, some data may of been added, updated, or deleted, that is not part of the file. FileMaker Server's Persistent Cache settings can greatly reduce the likelyhood of this problem, and can restore the file to its at, or very close to, the time of the incident. It can do this by utilizing data that was written out to cache files, similar to a transaction log, to restore any recent changes.
 
