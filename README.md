@@ -49,15 +49,6 @@ In this case there is nothing close to certainty about the state of the file. At
 
 FileMaker Server's Persistent Cache settings can greatly reduce the likelyhood of losing any data, and can restore the file's data to something either at, or very close to, the time of the incident. It does this by utilizing data that was written out to cache files, similar to a transaction log, to restore any recent changes. The main catch, at least for very large files: the only way to utilize this is to allow FMS to re-open the file, perform a lengthy consistency check, and then attempt to re-consolidate the files.
 
-If using FMP, or FMS is not using Persistent Cache, or the cache is unusable for some reason, you probably have an increased likelyhood of a more seriously damaged file. In regards to lost data however there is one thing to check for in the Event.log. If you see a message like the one below the Persistent Cache could be missing a significant number of changes:
+If using FMP, or FMS is not using Persistent Cache, or the cache is unusable for some reason, you have an increased likelyhood of ending up with a more seriously damaged file. In regards to lost data however there is one thing to check for in the Event.log. If you see a message like the one below the Persistent Cache could be missing a significant number of changes:
 
 `The transaction originating from user[user-name-here] session[session-name] machine[your.host.name] to file[your-filename.fmp12] was not committed before the server terminated abnormally.`
-
-### More Background
-
-Typically you'd be interested in this tool if your server or client had became unstable, had a power outage, disk became too full, etc.
-In these cases there may be uncertainty as to whether the previously files were open (hosted) at the time of the incident, and whether they are safe to use.
-
-But other less common situations may occur where there is reason to think the current files were not damaged by the event, or extra measures are needed. In these cases, it may be safe to
-proceed with the previously opened/hosted files.
-Generally, if a file is open and in use, there will be unsaved data (record commits, etc.) that is still in memory or has not been written out to the .fmp12 file yet.
