@@ -38,12 +38,12 @@ def check_byte_0x800(path: str) -> bool:
 
 	file_size = os.path.getsize(path)
 	if file_size < 0x801:
-		raise ValueError(f"'{path}' is too small (needs at least {0x801} bytes, has {file_size})")
+		raise ValueError(f"'{path}' is too small (needs at least 196608 bytes, has {file_size})")
 
 	with open(path, 'rb') as f:
 		f.seek(0x800)
 		byte_value = f.read(1)
-		return byte_value[0] == 0xAC
+		return byte_value[0]
 
 
 if __name__ == '__main__':
@@ -51,6 +51,7 @@ if __name__ == '__main__':
 	
 	if len(sys.argv) < 2:
 		print("Usage: python3 filemaker-clean-file-check.py <file_path>")
+		print ()
 		sys.exit(1)
 	
 	file_path = sys.argv[1]
@@ -58,19 +59,23 @@ if __name__ == '__main__':
 	try:
 		result = check_byte_0x800(file_path)
 		print ()
-		if result:
+		if result == 0xAC:
 			print(f"✓ Byte at 0x800 is 0xAC")
 			print ("This file was closed normally.")
 			print ()
-		else:
-			with open(file_path, 'rb') as f:
-				f.seek(0x800)
-				actual_byte = f.read(1)[0]
-			print(f"✗ Byte at 0x800 is 0x{actual_byte:02X} (expected 0xAC)")
+		elif result == 0:
+			print(f"✗ Byte at 0x800 is 0x{result:02X} (expected 0xAC)")
 			print_error ("FILE NOT CLOSED CLEANLY")
-			print ("This file should be checked more closely for problems, or a backup used instead.")
+			print ("This file should be checked more closely for problems, or use a backup instead.")
 			print ()
-		sys.exit(0 if result else 1)
+			sys.exit(1)
+		else:
+			print(f"✗ Byte at 0x800 is 0x{result:02X} and is not a valid flag")
+			print_error ("THIS FILE IS PROBABLY DAMAGED OR NOT A FMP12 FILE")
+			sys.exit(2)
+
 	except Exception as e:
 		print(f"Error: {e}")
-		sys.exit(2)
+		sys.exit(3)
+
+	sys.exit (0)
